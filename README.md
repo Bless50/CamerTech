@@ -1,509 +1,329 @@
 # 🔧 Technician Booking Platform
 
-A comprehensive web application that connects customers with verified technicians across multiple service categories including electrical, plumbing, automotive, electronics repair, home improvement, and appliance services.
+A web platform that connects people with trusted technicians for home services, electronics, auto repair, plumbing, and more.
 
-## 📋 Table of Contents
+---
 
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Environment Setup](#environment-setup)
-- [Usage](#usage)
-- [Project Structure](#project-structure)
-- [API Documentation](#api-documentation)
-- [Contributing](#contributing)
-- [Testing](#testing)
-- [Deployment](#deployment)
-- [License](#license)
-- [Support](#support)
+## 📚 Table of Contents
+
+* [Features](#features)
+* [Tech Stack](#tech-stack)
+* [Getting Started](#getting-started)
+* [Environment Setup](#environment-setup)
+* [Usage](#usage)
+* [Project Structure](#project-structure)
+* [API Reference](#api-reference)
+* [Testing](#testing)
+* [Deployment](#deployment)
+* [Contributing](#contributing)
+* [License](#license)
+* [Support](#support)
+
+---
 
 ## ✨ Features
 
 ### For Customers
-- 🔍 **Smart Search**: Find technicians by service type, location, and availability
-- 📅 **Instant Booking**: Real-time scheduling with immediate confirmation
-- 💰 **Transparent Pricing**: Clear CFA pricing with no hidden fees
-- ⭐ **Rating System**: Review and rate service providers
-- 🔒 **Secure Payments**: Multiple payment methods with encryption
-- 📱 **Real-time Tracking**: Live updates on service progress
-- 🛡️ **Quality Guarantee**: 100% satisfaction guarantee
 
-### For Service Providers
-- 📊 **Analytics Dashboard**: Comprehensive performance metrics
-- 💼 **Profile Management**: Detailed service provider profiles
-- 📈 **Earnings Tracking**: Revenue analytics and financial reporting
-- 🎯 **Benchmark Comparisons**: Industry performance comparisons
-- 📱 **Mobile Responsive**: Manage business on any device
-- 🔔 **Notification System**: Real-time booking alerts
-- 💳 **Fast Payments**: 24-hour payment processing
+* Search technicians by service, location, and availability
+* Book services in real time
+* Transparent CFA pricing
+* Rate and review technicians
+* Pay securely online
+* Track service progress live
+* Satisfaction guaranteed
 
-### For Administrators
-- 👥 **User Management**: Comprehensive user and provider administration
-- 📊 **Platform Analytics**: Detailed business intelligence dashboards
-- 🔍 **Provider Verification**: Background check and skill verification system
-- 💰 **Financial Oversight**: Revenue tracking and financial reporting
-- 🛠️ **Service Management**: Category and service administration
-- 📈 **Performance Monitoring**: Real-time platform metrics
+### For Technicians
 
-## 🛠️ Tech Stack
+* Analytics dashboard for performance insights
+* Manage profile and service offerings
+* Monitor earnings in real time
+* See how you rank in the industry
+* Mobile-friendly dashboard
+* Instant booking alerts
+* Fast payouts (within 24 hours)
+
+### For Admins
+
+* Manage users and providers
+* Monitor platform metrics
+* Review and verify provider credentials
+* Track platform revenue
+* Add or update service categories
+* Access real-time business analytics
+
+---
+
+## 🛠 Tech Stack
 
 ### Frontend
-- **Framework**: Next.js 14 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **UI Components**: shadcn/ui
-- **Icons**: Lucide React
-- **Charts**: Recharts
-- **State Management**: React Hooks
+
+* **Next.js 14 (App Router)**
+* **TypeScript**
+* **Tailwind CSS**
+* **shadcn/ui**
+* **Lucide Icons**
+* **Recharts**
 
 ### Backend
-- **Runtime**: Node.js
-- **Framework**: Next.js API Routes
-- **Database**: PostgreSQL (Neon/Supabase)
-- **Authentication**: NextAuth.js
-- **File Storage**: Vercel Blob
-- **Email**: Resend
 
-### Development Tools
-- **Package Manager**: npm/yarn
-- **Linting**: ESLint
-- **Formatting**: Prettier
-- **Type Checking**: TypeScript
-- **Version Control**: Git
+* **Node.js + Next.js API Routes**
+* **PostgreSQL (via Neon or Supabase)**
+* **NextAuth.js** for authentication
+* **Vercel Blob** for file storage
+* **Resend** for emails
 
-## 📋 Prerequisites
+### Dev Tools
 
-Before you begin, ensure you have the following installed:
+* ESLint + Prettier
+* TypeScript
+* npm / yarn
+* Git
 
-- **Node.js** (v18.0.0 or higher)
-- **npm** (v8.0.0 or higher) or **yarn** (v1.22.0 or higher)
-- **Git** (v2.0.0 or higher)
-- **PostgreSQL** (v13.0.0 or higher) - Optional if using cloud database
+---
 
-## 🚀 Installation
+## 🧰 Getting Started
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/your-username/technician-booking-platform.git
-   cd technician-booking-platform
-   ```
+### Prerequisites
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
+Install these tools first:
 
-3. **Set up environment variables**
-   ```bash
-   cp .env.example .env.local
-   ```
+* Node.js (v18+)
+* npm (v8+) or yarn (v1.22+)
+* Git (v2+)
+* PostgreSQL (optional if using Neon/Supabase)
 
-4. **Configure your environment variables** (see [Environment Setup](#environment-setup))
-
-5. **Run database migrations** (if using local database)
-   ```bash
-   npm run db:migrate
-   # or
-   yarn db:migrate
-   ```
-
-6. **Start the development server**
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-
-7. **Open your browser** and navigate to `http://localhost:3000`
-
-## 🔧 Environment Setup
-
-Create a `.env.local` file in the root directory with the following variables:
-
-```env
-# Database Configuration
-DATABASE_URL="postgresql://username:password@localhost:5432/technician_booking"
-
-# Authentication
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-nextauth-secret-key"
-
-# OAuth Providers (Optional)
-GOOGLE_CLIENT_ID="your-google-client-id"
-GOOGLE_CLIENT_SECRET="your-google-client-secret"
-
-# Email Configuration
-RESEND_API_KEY="your-resend-api-key"
-FROM_EMAIL="noreply@yourdomain.com"
-
-# File Storage
-BLOB_READ_WRITE_TOKEN="your-vercel-blob-token"
-
-# Payment Processing (Optional)
-STRIPE_SECRET_KEY="your-stripe-secret-key"
-STRIPE_PUBLISHABLE_KEY="your-stripe-publishable-key"
-
-# AI Features (Optional)
-OPENAI_API_KEY="your-openai-api-key"
-
-# Analytics (Optional)
-GOOGLE_ANALYTICS_ID="your-ga-tracking-id"
-```
-
-### Database Setup Options
-
-#### Option 1: Neon (Recommended)
-1. Create account at [Neon](https://neon.tech)
-2. Create a new project
-3. Copy the connection string to `DATABASE_URL`
-
-#### Option 2: Supabase
-1. Create account at [Supabase](https://supabase.com)
-2. Create a new project
-3. Copy the connection string to `DATABASE_URL`
-
-#### Option 3: Local PostgreSQL
-1. Install PostgreSQL locally
-2. Create a database named `technician_booking`
-3. Update `DATABASE_URL` with your local credentials
-
-## 📖 Usage
-
-### Development Commands
+### Installation
 
 ```bash
-# Start development server
+git clone https://github.com/Joeltabe/camrtech.git
+cd technician-booking-platform
+
+npm install      # or yarn install
+
+cp .env.example .env.local
+
+npm run db:migrate    # if using a local database
+
 npm run dev
-
-# Build for production
-npm run build
-
-# Start production server
-npm start
-
-# Run linting
-npm run lint
-
-# Run type checking
-npm run type-check
-
-# Format code
-npm run format
-
-# Run tests
-npm test
-
-# Run database migrations
-npm run db:migrate
-
-# Reset database
-npm run db:reset
-
-# Generate database client
-npm run db:generate
 ```
 
-### Key URLs
+Visit `http://localhost:3000` in your browser.
 
-- **Homepage**: `http://localhost:3000`
-- **Search Technicians**: `http://localhost:3000/search`
-- **Services**: `http://localhost:3000/services`
-- **How It Works**: `http://localhost:3000/how-it-works`
-- **Admin Dashboard**: `http://localhost:3000/admin`
-- **Customer Dashboard**: `http://localhost:3000/dashboard/customer`
-- **Provider Dashboard**: `http://localhost:3000/dashboard/technician`
+---
+
+## 🔐 Environment Setup
+
+Edit `.env.local`:
+
+```env
+DATABASE_URL="postgresql://username:password@localhost:5432/technician_booking"
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-secret"
+
+GOOGLE_CLIENT_ID="..."
+GOOGLE_CLIENT_SECRET="..."
+
+RESEND_API_KEY="..."
+FROM_EMAIL="..."
+
+BLOB_READ_WRITE_TOKEN="..."
+
+STRIPE_SECRET_KEY="..."
+STRIPE_PUBLISHABLE_KEY="..."
+
+OPENAI_API_KEY="..."
+GOOGLE_ANALYTICS_ID="..."
+```
+
+Choose one for the database:
+
+* **Neon**: Free, fast, cloud Postgres
+* **Supabase**: Real-time and scalable
+* **Local PostgreSQL**: Manual setup
+
+---
+
+## 💻 Usage
+
+### Dev Scripts
+
+```bash
+npm run dev          # Start local server
+npm run build        # Build for production
+npm start            # Start production server
+npm run lint         # Lint code
+npm run type-check   # TypeScript check
+npm run test         # Run tests
+```
+
+### App URLs
+
+* `/` — Home
+* `/search` — Search for technicians
+* `/services` — View available services
+* `/how-it-works` — Guide
+* `/admin` — Admin dashboard
+* `/dashboard/customer` — Customer dashboard
+* `/dashboard/technician` — Provider dashboard
+
+---
 
 ## 📁 Project Structure
 
 ```
-technician-booking-platform/
-├── app/                          # Next.js App Router
-│   ├── (auth)/                   # Authentication routes
-│   ├── admin/                    # Admin dashboard
-│   ├── api/                      # API routes
-│   ├── dashboard/                # User dashboards
-│   ├── globals.css               # Global styles
-│   ├── layout.tsx                # Root layout
-│   └── page.tsx                  # Homepage
-├── components/                   # Reusable components
-│   ├── ui/                       # shadcn/ui components
-│   ├── analytics-dashboard.tsx   # Analytics components
-│   ├── booking-modal.tsx         # Booking functionality
-│   └── ...                       # Other components
-├── lib/                          # Utility functions
-│   ├── analytics.ts              # Analytics utilities
-│   ├── auth.ts                   # Authentication config
-│   ├── currency.ts               # Currency utilities
-│   ├── db.ts                     # Database connection
-│   └── utils.ts                  # General utilities
-├── hooks/                        # Custom React hooks
-├── types/                        # TypeScript type definitions
-├── public/                       # Static assets
-├── scripts/                      # Database scripts
-├── .env.example                  # Environment variables template
-├── .gitignore                    # Git ignore rules
-├── next.config.js                # Next.js configuration
-├── package.json                  # Dependencies and scripts
-├── tailwind.config.js            # Tailwind CSS configuration
-└── tsconfig.json                 # TypeScript configuration
+├── app/                → Pages & routes
+│   ├── api/            → API handlers
+│   ├── admin/          → Admin views
+│   ├── dashboard/      → Customer and provider views
+│   └── ...             
+├── components/         → UI components
+├── lib/                → Utilities and helpers
+├── hooks/              → Custom React hooks
+├── types/              → TypeScript types
+├── public/             → Static files
+├── scripts/            → DB migration scripts
 ```
 
-### Key Directories
+---
 
-- **`app/`**: Next.js 14 App Router with file-based routing
-- **`components/`**: Reusable React components organized by feature
-- **`lib/`**: Utility functions, database connections, and configurations
-- **`hooks/`**: Custom React hooks for shared logic
-- **`types/`**: TypeScript type definitions and interfaces
-- **`public/`**: Static assets like images, icons, and fonts
+## 📡 API Reference
 
-## 📚 API Documentation
+### Auth
 
-### Authentication Endpoints
+* `POST /api/auth/signin`
+* `POST /api/auth/signup`
+* `POST /api/auth/signout`
 
-- `POST /api/auth/signin` - User sign in
-- `POST /api/auth/signup` - User registration
-- `POST /api/auth/signout` - User sign out
+### Bookings
 
-### Booking Endpoints
+* `GET /api/bookings`
+* `POST /api/bookings`
+* `PUT /api/bookings/[id]`
+* `DELETE /api/bookings/[id]`
 
-- `GET /api/bookings` - Get user bookings
-- `POST /api/bookings` - Create new booking
-- `PUT /api/bookings/[id]` - Update booking
-- `DELETE /api/bookings/[id]` - Cancel booking
+### Providers
 
-### Provider Endpoints
+* `GET /api/providers`
+* `POST /api/providers`
+* `PUT /api/providers/[id]`
 
-- `GET /api/providers` - Get all providers
-- `GET /api/providers/[id]` - Get provider details
-- `POST /api/providers` - Create provider profile
-- `PUT /api/providers/[id]` - Update provider profile
+### Admin
 
-### Admin Endpoints
+* `GET /api/admin/analytics`
+* `GET /api/admin/users`
+* `PUT /api/admin/users/[id]`
 
-- `GET /api/admin/analytics` - Get platform analytics
-- `GET /api/admin/users` - Get all users
-- `PUT /api/admin/users/[id]` - Update user status
+---
 
-## 🤝 Contributing
+## 🦪 Testing
 
-We welcome contributions from the community! Please follow these guidelines:
-
-### Getting Started
-
-1. **Fork the repository**
-2. **Create a feature branch**
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-3. **Make your changes**
-4. **Write or update tests**
-5. **Run the test suite**
-   ```bash
-   npm test
-   ```
-6. **Commit your changes**
-   ```bash
-   git commit -m "feat: add your feature description"
-   ```
-7. **Push to your fork**
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-8. **Create a Pull Request**
-
-### Commit Convention
-
-We use [Conventional Commits](https://conventionalcommits.org/) for commit messages:
-
-- `feat:` New features
-- `fix:` Bug fixes
-- `docs:` Documentation changes
-- `style:` Code style changes
-- `refactor:` Code refactoring
-- `test:` Test additions or modifications
-- `chore:` Maintenance tasks
-
-### Code Style
-
-- Use **TypeScript** for all new code
-- Follow **ESLint** and **Prettier** configurations
-- Write **meaningful commit messages**
-- Add **JSDoc comments** for complex functions
-- Ensure **responsive design** for all UI components
-- Write **unit tests** for utility functions
-- Write **integration tests** for API endpoints
-
-### Pull Request Guidelines
-
-- Provide a clear description of the changes
-- Include screenshots for UI changes
-- Ensure all tests pass
-- Update documentation if necessary
-- Link related issues
-
-## 🧪 Testing
-
-### Running Tests
+### Run Tests
 
 ```bash
-# Run all tests
-npm test
-
-# Run tests in watch mode
-npm run test:watch
-
-# Run tests with coverage
-npm run test:coverage
-
-# Run specific test file
-npm test -- booking.test.ts
+npm test                 # Run all tests
+npm run test:watch       # Watch mode
+npm run test:coverage    # Coverage report
 ```
 
-### Test Structure
+### Example
 
-- **Unit Tests**: `__tests__/unit/`
-- **Integration Tests**: `__tests__/integration/`
-- **E2E Tests**: `__tests__/e2e/`
-
-### Writing Tests
-
-```typescript
-// Example unit test
+```ts
 import { formatCurrency } from '@/lib/currency'
 
-describe('formatCurrency', () => {
-  it('should format CFA currency correctly', () => {
-    expect(formatCurrency(1000, 'CFA')).toBe('1,000 CFA')
-  })
+test('format CFA', () => {
+  expect(formatCurrency(1000, 'CFA')).toBe('1,000 CFA')
 })
 ```
+
+Test folders:
+
+* `__tests__/unit/`
+* `__tests__/integration/`
+* `__tests__/e2e/`
+
+---
 
 ## 🚀 Deployment
 
 ### Vercel (Recommended)
 
-1. **Connect your repository** to Vercel
-2. **Configure environment variables** in Vercel dashboard
-3. **Deploy automatically** on push to main branch
+* Connect GitHub repo
+* Add env vars via Vercel dashboard
+* Deploy on push to main
 
-### Manual Deployment
+### Manual
 
 ```bash
-# Build the application
 npm run build
-
-# Start production server
 npm start
 ```
 
-### Environment Variables for Production
+---
 
-Ensure all environment variables are configured in your deployment platform:
+## 🤝 Contributing
 
-- Database connection strings
-- Authentication secrets
-- API keys for third-party services
-- Domain-specific URLs
+### Steps
 
-## 📄 License
+* Fork the repo
+* Create a feature branch
+* Write code + tests
+* Commit using [Conventional Commits](https://www.conventionalcommits.org/)
+* Push and open a PR
 
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+### Commit Types
 
-### MIT License Summary
+* `feat:` New features
+* `fix:` Bug fixes
+* `docs:` Docs only
+* `test:` Test updates
+* `chore:` Internal updates
 
-- ✅ Commercial use
-- ✅ Modification
-- ✅ Distribution
-- ✅ Private use
-- ❌ Liability
-- ❌ Warranty
+### Guidelines
 
-## 🆘 Support
-
-### Getting Help
-
-- **Documentation**: Check this README and inline code comments
-- **Issues**: Create an issue on GitHub for bugs or feature requests
-- **Discussions**: Use GitHub Discussions for questions and ideas
-- **Email**: Contact us at support@technicianplatform.com
-
-### Reporting Issues
-
-When reporting issues, please include:
-
-1. **Environment details** (OS, Node.js version, browser)
-2. **Steps to reproduce** the issue
-3. **Expected behavior**
-4. **Actual behavior**
-5. **Screenshots** (if applicable)
-6. **Error messages** or logs
-
-### Feature Requests
-
-We welcome feature requests! Please:
-
-1. **Check existing issues** to avoid duplicates
-2. **Provide detailed description** of the feature
-3. **Explain the use case** and benefits
-4. **Consider implementation complexity**
-
-## 🙏 Acknowledgments
-
-- **Next.js Team** for the amazing framework
-- **Vercel** for hosting and deployment platform
-- **shadcn/ui** for beautiful UI components
-- **Tailwind CSS** for utility-first styling
-- **Open Source Community** for inspiration and contributions
-
-## 📊 Project Status
-
-- **Version**: 1.0.0
-- **Status**: Active Development
-- **Last Updated**: January 2025
-- **Maintainers**: 2
-- **Contributors**: 5+
+* Use TypeScript
+* Keep UI responsive
+* Follow linting/formatting rules
+* Write clear commit messages
 
 ---
 
-**Made with ❤️ by the Technician Booking Platform Team**
+## 🗒 License
 
-For more information, visit our [website](https://technicianplatform.com) or follow us on [Twitter](https://twitter.com/technicianplatform).
-```
+This project uses the **MIT License**.
 
-I've created a comprehensive README file that covers all essential aspects of the technician booking platform project. The README includes:
+✔ Free to use, modify, and distribute
+❌ No warranty or liability
 
-## 📋 **Complete Documentation Coverage:**
+---
 
-### **Project Overview**
-- Clear title and description
-- Feature highlights for all user types
-- Technology stack details
-- Project status and metadata
+## 🚘 Support
 
-### **Setup Instructions**
-- Prerequisites and system requirements
-- Step-by-step installation guide
-- Environment configuration
-- Database setup options (Neon, Supabase, Local)
+### Need Help?
 
-### **Development Guidelines**
-- Project structure explanation
-- Available npm scripts
-- API documentation
-- Testing procedures
+* Review this README
+* Check code comments
+* Open a GitHub issue
+* Email: `support@technicianplatform.com`
 
-### **Contribution Framework**
-- Contributing guidelines
-- Code style requirements
-- Commit conventions
-- Pull request process
+When reporting:
 
-### **Deployment & Support**
-- Deployment instructions for Vercel
-- Environment variable configuration
-- Support channels and issue reporting
-- License information
+* List your OS and Node version
+* Show steps to reproduce
+* Include logs or screenshots
+
+---
+
+## 🙌 Acknowledgments
+
+* Next.js
+* Vercel
+* Tailwind CSS
+* shadcn/ui
+* Open source contributors
+
+---
+
+**Built by Lucenex Technologies**
+Visit [technicianplatform.com](https://technicianplatform.com)
+Follow [@technicianplatform](https://twitter.com/technicianplatform)
