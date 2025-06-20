@@ -12,14 +12,16 @@ import { useEffect, useState } from "react"
 
 export default function HomePage() {
   const serviceCategories = [
-    { icon: Zap, name: "Electrical", count: 45, color: "bg-yellow-100 text-yellow-800" },
-    { icon: Droplets, name: "Plumbing", count: 38, color: "bg-blue-100 text-blue-800" },
-    { icon: Hammer, name: "Carpentry", count: 32, color: "bg-amber-100 text-amber-800" },
-    { icon: Wind, name: "AC Maintenance", count: 28, color: "bg-cyan-100 text-cyan-800" },
-    { icon: Wrench, name: "General Repairs", count: 52, color: "bg-gray-100 text-gray-800" },
+    { id: "electrical", icon: Zap, name: "Electrical", color: "bg-yellow-100 text-yellow-800" },
+    { id: "plumbing", icon: Droplets, name: "Plumbing", color: "bg-blue-100 text-blue-800" },
+    { id: "carpentry", icon: Hammer, name: "Carpentry", color: "bg-amber-100 text-amber-800" },
+    { id: "ac", icon: Wind, name: "AC Maintenance", color: "bg-cyan-100 text-cyan-800" },
+    { id: "general", icon: Wrench, name: "General Repairs", color: "bg-gray-100 text-gray-800" },
   ]
 
   const [featuredTechnicians, setFeaturedTechnicians] = useState<any[]>([])
+  const [serviceCounts, setServiceCounts] = useState<Record<string, number>>({})
+  const [technicianCount, setTechnicianCount] = useState<number>(0)
 
   useEffect(() => {
     fetch("/api/technicians")
@@ -29,6 +31,15 @@ export default function HomePage() {
         setFeaturedTechnicians(data)
       })
   }, [])
+
+  useEffect(() => {
+    fetch("/api/service-stats")
+      .then(res => res.json())
+      .then(data => setServiceCounts(data));
+    fetch("/api/technician-count")
+      .then(res => res.json())
+      .then(data => setTechnicianCount(data.count ?? 0));
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -81,7 +92,7 @@ export default function HomePage() {
           {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600 mb-2">500+</div>
+              <div className="text-3xl font-bold text-blue-600 mb-2">{technicianCount}</div>
               <div className="text-gray-600">Verified Technicians</div>
             </div>
             <div className="text-center">
@@ -113,7 +124,7 @@ export default function HomePage() {
                   </div>
                   <h3 className="font-semibold text-gray-900 mb-2">{category.name}</h3>
                   <Badge variant="secondary" className={category.color}>
-                    {category.count} technicians
+                    {serviceCounts[category.id] ?? 0} technicians
                   </Badge>
                 </CardContent>
               </Card>

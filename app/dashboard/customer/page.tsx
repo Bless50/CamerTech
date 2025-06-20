@@ -38,6 +38,14 @@ function getTechnicianInitials(technician: string | { name?: string }) {
   return "";
 }
 
+// Helper to get technician display name from string or object
+function getTechnicianName(technician: string | { name?: string }) {
+  if (!technician) return "";
+  if (typeof technician === "string") return technician;
+  if (typeof technician === "object" && technician.name) return technician.name;
+  return "";
+}
+
 export default function CustomerDashboard() {
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState("bookings")
@@ -181,7 +189,7 @@ export default function CustomerDashboard() {
                             <h3 className="font-semibold text-lg">{booking.service}</h3>
                             <Badge className={getStatusColor(booking.status)}>{booking.status}</Badge>
                           </div>
-                          <p className="text-gray-600 mb-2">with {booking.technician}</p>
+                          <p className="text-gray-600 mb-2">with {getTechnicianName(booking.technician)}</p>
                           <div className="flex items-center space-x-4 text-sm text-gray-500 mb-2">
                             <div className="flex items-center space-x-1">
                               <Calendar className="h-4 w-4" />
@@ -247,7 +255,7 @@ export default function CustomerDashboard() {
                         </Avatar>
                         <div className="flex-1">
                           <h3 className="font-semibold text-lg mb-1">{booking.service}</h3>
-                          <p className="text-gray-600 mb-2">with {booking.technician}</p>
+                          <p className="text-gray-600 mb-2">with {getTechnicianName(booking.technician)}</p>
                           <div className="flex items-center space-x-4 text-sm text-gray-500">
                             <div className="flex items-center space-x-1">
                               <Calendar className="h-4 w-4" />
