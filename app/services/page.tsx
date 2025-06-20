@@ -136,8 +136,8 @@ export default function ServicesPage() {
                         <Button variant="outline" className="w-full">
                           <Search className="h-4 w-4 mr-2" />
                           Find Pros
-                        </Button>
-                      </Link>
+                  </Button>
+                </Link>
                     </div>
                   </CardContent>
                 </Card>

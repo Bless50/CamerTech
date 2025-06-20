@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     console.error("Error creating customer:", error);
     return NextResponse.json({ error: "Failed to create customer account" }, { status: 500 });
   }
-}
+} 
 
 export async function GET(request: NextRequest) {
   try {
