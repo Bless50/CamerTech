@@ -46,4 +46,25 @@ export async function POST(request: NextRequest) {
     console.error("Error creating customer:", error);
     return NextResponse.json({ error: "Failed to create customer account" }, { status: 500 });
   }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+    if (!id) {
+      return NextResponse.json([], { status: 200 });
+    }
+    const user = await prisma.user.findUnique({
+      where: { id },
+      include: { customerProfile: true },
+    });
+    if (!user) {
+      return NextResponse.json([], { status: 200 });
+    }
+    return NextResponse.json([user], { status: 200 });
+  } catch (error) {
+    console.error("Error fetching customer:", error);
+    return NextResponse.json({ error: "Failed to fetch customer" }, { status: 500 });
+  }
 } 

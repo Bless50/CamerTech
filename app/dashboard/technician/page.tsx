@@ -59,7 +59,7 @@ export default function TechnicianDashboard() {
   useEffect(() => {
     if (!session?.user?.id) return;
     setLoading(true);
-    fetch(`/api/bookings?technicianId=${session.user.id}`)
+    fetch(`/api/bookings?technicianId=${session.user.id}`, { credentials: "include" })
       .then(res => res.json())
       .then(data => {
         setBookings(data);

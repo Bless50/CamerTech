@@ -27,6 +27,12 @@ export default function BookServicePage() {
   const [technicians, setTechnicians] = useState<any[]>([])
   const [search, setSearch] = useState("")
 
+  useEffect(() => {
+    fetch("/api/technicians")
+      .then(res => res.json())
+      .then(data => setTechnicians(data));
+  }, []);
+
   if (status === "loading") return <div>Loading...</div>;
   if (status === "unauthenticated") {
     return <div className="min-h-screen flex items-center justify-center text-xl font-semibold text-red-600">You must be logged in to book a service.</div>;
@@ -39,12 +45,6 @@ export default function BookServicePage() {
     { id: "ac", name: "AC Maintenance", description: "Air conditioning service & repair" },
     { id: "general", name: "General Repairs", description: "Home and office maintenance" },
   ]
-
-  useEffect(() => {
-    fetch("/api/technicians")
-      .then(res => res.json())
-      .then(data => setTechnicians(data));
-  }, []);
 
   const filteredTechnicians = technicians.filter(
     (tech) =>
@@ -91,7 +91,7 @@ export default function BookServicePage() {
     const res = await fetch("/api/bookings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "same-origin",
+      credentials: "include",
       body: JSON.stringify({
         technicianId: selectedTechnician.id,
         service: selectedService,
@@ -102,6 +102,7 @@ export default function BookServicePage() {
     });
     if (res.ok) {
       alert("Booking created!");
+      window.location.href = "/dashboard/customer";
       // Optionally redirect or reset state
     } else {
       const data = await res.json();

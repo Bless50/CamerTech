@@ -26,6 +26,18 @@ import { BookNowButton } from "@/components/book-now-button"
 import { formatCurrency } from "@/lib/currency"
 import { useSession } from "next-auth/react"
 
+// Helper to get technician initials from string or object
+function getTechnicianInitials(technician: string | { name?: string }) {
+  if (!technician) return "";
+  if (typeof technician === "string") {
+    return technician.split(" ").map(n => n[0]).join("");
+  }
+  if (typeof technician === "object" && technician.name) {
+    return technician.name.split(" ").map(n => n[0]).join("");
+  }
+  return "";
+}
+
 export default function CustomerDashboard() {
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState("bookings")
@@ -33,7 +45,7 @@ export default function CustomerDashboard() {
   const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
-    fetch("/api/bookings")
+    fetch("/api/bookings", { credentials: "include" })
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -161,10 +173,7 @@ export default function CustomerDashboard() {
                         <Avatar>
                           <AvatarImage src={booking.technicianImage || "/placeholder.svg"} />
                           <AvatarFallback>
-                            {booking.technician
-                              .split(" ")
-                              .map((n: string) => n[0])
-                              .join("")}
+                            {getTechnicianInitials(booking.technician)}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
@@ -233,10 +242,7 @@ export default function CustomerDashboard() {
                         <Avatar>
                           <AvatarImage src={booking.technicianImage || "/placeholder.svg"} />
                           <AvatarFallback>
-                            {booking.technician
-                              .split(" ")
-                              .map((n: string) => n[0])
-                              .join("")}
+                            {getTechnicianInitials(booking.technician)}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
