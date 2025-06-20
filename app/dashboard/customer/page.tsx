@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -27,56 +27,17 @@ import { formatCurrency } from "@/lib/currency"
 
 export default function CustomerDashboard() {
   const [activeTab, setActiveTab] = useState("bookings")
+  const [bookings, setBookings] = useState<any[]>([])
 
-  const upcomingBookings = [
-    {
-      id: 1,
-      service: "Electrical Repair",
-      technician: "John Okafor",
-      date: "2024-01-15",
-      time: "10:00 AM",
-      status: "confirmed",
-      address: "123 Victoria Island, Lagos",
-      price: 15000,
-      technicianImage: "/placeholder.svg?height=40&width=40",
-      technicianRating: 4.9,
-    },
-    {
-      id: 2,
-      service: "Plumbing Fix",
-      technician: "Sarah Mensah",
-      date: "2024-01-18",
-      time: "2:00 PM",
-      status: "pending",
-      address: "456 Ikoyi, Lagos",
-      price: 12000,
-      technicianImage: "/placeholder.svg?height=40&width=40",
-      technicianRating: 4.8,
-    },
-  ]
+  useEffect(() => {
+    fetch("/api/bookings")
+      .then((res) => res.json())
+      .then((data) => setBookings(data))
+  }, [])
 
-  const bookingHistory = [
-    {
-      id: 3,
-      service: "AC Maintenance",
-      technician: "David Mwangi",
-      date: "2024-01-10",
-      status: "completed",
-      price: 18000,
-      rating: 5,
-      technicianImage: "/placeholder.svg?height=40&width=40",
-    },
-    {
-      id: 4,
-      service: "Carpentry Work",
-      technician: "Michael Adebayo",
-      date: "2024-01-05",
-      status: "completed",
-      price: 25000,
-      rating: 4,
-      technicianImage: "/placeholder.svg?height=40&width=40",
-    },
-  ]
+  // Split bookings into upcoming and history based on status
+  const upcomingBookings = bookings.filter((b) => b.status === "CONFIRMED" || b.status === "PENDING")
+  const bookingHistory = bookings.filter((b) => b.status === "COMPLETED" || b.status === "CANCELLED")
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -184,7 +145,7 @@ export default function CustomerDashboard() {
                           <AvatarFallback>
                             {booking.technician
                               .split(" ")
-                              .map((n) => n[0])
+                              .map((n: string) => n[0])
                               .join("")}
                           </AvatarFallback>
                         </Avatar>
@@ -256,7 +217,7 @@ export default function CustomerDashboard() {
                           <AvatarFallback>
                             {booking.technician
                               .split(" ")
-                              .map((n) => n[0])
+                              .map((n: string) => n[0])
                               .join("")}
                           </AvatarFallback>
                         </Avatar>

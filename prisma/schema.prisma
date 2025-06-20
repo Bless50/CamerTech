@@ -1,0 +1,102 @@
+// Prisma schema for Technician Booking Platform
+// Database: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String              @id @default(cuid())
+  name               String?
+  email              String?             @unique
+  emailVerified      DateTime?
+  password           String?
+  image              String?
+  role               Role                @default(CUSTOMER)
+  technicianProfile  TechnicianProfile?
+  bookingsAsCustomer Booking[]           @relation("CustomerBookings")
+  bookingsAsTech     Booking[]           @relation("TechnicianBookings")
+  accounts           Account[]
+  sessions           Session[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+}
+
+enum Role {
+  CUSTOMER
+  TECHNICIAN
+  ADMIN
+}
+
+model TechnicianProfile {
+  id          String   @id @default(cuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String   @unique
+  bio         String?
+  phone       String?
+  location    String?
+  services    String[]
+  rating      Float?   @default(0)
+  reviews     Int?     @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Booking {
+  id             String   @id @default(cuid())
+  customer       User     @relation("CustomerBookings", fields: [customerId], references: [id])
+  customerId     String
+  technician     User     @relation("TechnicianBookings", fields: [technicianId], references: [id])
+  technicianId   String
+  service        String
+  date           DateTime
+  status         BookingStatus @default(PENDING)
+  notes          String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+// NextAuth.js models
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+  user               User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires   DateTime
+
+  @@unique([identifier, token])
+}
