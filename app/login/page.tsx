@@ -10,10 +10,48 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Eye, EyeOff, Wrench, Mail, Lock } from "lucide-react"
 import Link from "next/link"
+import { signIn } from "next-auth/react"
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loginType, setLoginType] = useState("customer")
+  const [techEmail, setTechEmail] = useState("")
+  const [techPassword, setTechPassword] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [customerEmail, setCustomerEmail] = useState("")
+  const [customerPassword, setCustomerPassword] = useState("")
+
+  const handleTechLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    const res = await signIn("credentials", {
+      redirect: false,
+      email: techEmail,
+      password: techPassword,
+    })
+    setLoading(false)
+    if (res?.ok) {
+      window.location.href = "/dashboard/technician"
+    } else {
+      alert("Invalid credentials")
+    }
+  }
+
+  const handleCustomerLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    const res = await signIn("credentials", {
+      redirect: false,
+      email: customerEmail,
+      password: customerPassword,
+    })
+    setLoading(false)
+    if (res?.ok) {
+      window.location.href = "/dashboard/customer"
+    } else {
+      alert("Invalid credentials")
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -40,95 +78,89 @@ export default function LoginPage() {
               </TabsList>
 
               <TabsContent value="customer" className="space-y-4 mt-6">
-                <div className="space-y-2">
-                  <Label htmlFor="customer-email">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input id="customer-email" type="email" placeholder="Enter your email" className="pl-10" />
+                <form onSubmit={handleCustomerLogin}>
+                  <div className="space-y-2">
+                    <Label htmlFor="customer-email">Email</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input id="customer-email" type="email" value={customerEmail} onChange={e => setCustomerEmail(e.target.value)} placeholder="Enter your email" className="pl-10" />
+                    </div>
                   </div>
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="customer-password">Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="customer-password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
-                      className="pl-10 pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
+                  <div className="space-y-2">
+                    <Label htmlFor="customer-password">Password</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="customer-password"
+                        type={showPassword ? "text" : "password"}
+                        value={customerPassword}
+                        onChange={e => setCustomerPassword(e.target.value)}
+                        placeholder="Enter your password"
+                        className="pl-10 pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
                   </div>
-                </div>
 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox id="remember-customer" />
-                    <Label htmlFor="remember-customer" className="text-sm">
-                      Remember me
-                    </Label>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="remember-customer" />
+                      <Label htmlFor="remember-customer" className="text-sm">
+                        Remember me
+                      </Label>
+                    </div>
+                    <Link href="/forgot-password" className="text-sm text-blue-600 hover:underline">
+                      Forgot password?
+                    </Link>
                   </div>
-                  <Link href="/forgot-password" className="text-sm text-blue-600 hover:underline">
-                    Forgot password?
-                  </Link>
-                </div>
 
-                <Button className="w-full" size="lg">
-                  Sign In as Customer
-                </Button>
+                  <Button className="w-full" size="lg" type="submit" disabled={loading}>
+                    {loading ? "Signing in..." : "Sign In as Customer"}
+                  </Button>
+                </form>
               </TabsContent>
 
               <TabsContent value="technician" className="space-y-4 mt-6">
-                <div className="space-y-2">
-                  <Label htmlFor="tech-email">Email or Phone</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input id="tech-email" type="text" placeholder="Enter your email or phone" className="pl-10" />
+                <form onSubmit={handleTechLogin}>
+                  <div className="space-y-2">
+                    <Label htmlFor="tech-email">Email or Phone</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input id="tech-email" type="text" value={techEmail} onChange={e => setTechEmail(e.target.value)} placeholder="Enter your email or phone" className="pl-10" />
+                    </div>
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="tech-password">Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="tech-password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
-                      className="pl-10 pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
+                  <div className="space-y-2">
+                    <Label htmlFor="tech-password">Password</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input id="tech-password" type={showPassword ? "text" : "password"} value={techPassword} onChange={e => setTechPassword(e.target.value)} placeholder="Enter your password" className="pl-10 pr-10" />
+                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3 text-gray-400 hover:text-gray-600">
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
                   </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox id="remember-tech" />
-                    <Label htmlFor="remember-tech" className="text-sm">
-                      Remember me
-                    </Label>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="remember-tech" />
+                      <Label htmlFor="remember-tech" className="text-sm">
+                        Remember me
+                      </Label>
+                    </div>
+                    <Link href="/forgot-password" className="text-sm text-blue-600 hover:underline">
+                      Forgot password?
+                    </Link>
                   </div>
-                  <Link href="/forgot-password" className="text-sm text-blue-600 hover:underline">
-                    Forgot password?
-                  </Link>
-                </div>
-
-                <Button className="w-full bg-green-600 hover:bg-green-700" size="lg">
-                  Sign In as Technician
-                </Button>
+                  <Button className="w-full bg-green-600 hover:bg-green-700" size="lg" type="submit" disabled={loading}>
+                    {loading ? "Signing in..." : "Sign In as Technician"}
+                  </Button>
+                </form>
               </TabsContent>
             </Tabs>
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -25,74 +25,58 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { formatCurrency } from "@/lib/currency"
+import { useSession } from "next-auth/react"
+
+type Booking = {
+  id: string;
+  service: string;
+  customer: { name: string } | string;
+  date: string;
+  time?: string;
+  address?: string;
+  price?: number;
+  description?: string;
+  status: string;
+  urgency?: string;
+  customerImage?: string;
+  rating?: number;
+  review?: string;
+};
+
+// Helper to get customer name as string
+function getCustomerName(customer: string | { name: string }) {
+  return typeof customer === "string" ? customer : customer?.name || "";
+}
 
 export default function TechnicianDashboard() {
+  const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState("requests")
   const [isAvailable, setIsAvailable] = useState(true)
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<any>(null);
 
-  const bookingRequests = [
-    {
-      id: 1,
-      service: "Electrical Repair",
-      customer: "Ndi Lois",
-      date: "2024-01-15",
-      time: "10:00 AM",
-      address: "Mendong, Yaounde",
-      price: 15000,
-      description: "Need to fix faulty wiring in the kitchen",
-      customerImage: "/placeholder.svg?height=40&width=40",
-      urgency: "high",
-    },
-    {
-      id: 2,
-      service: "AC Installation",
-      customer: "Fomonyuy Ben",
-      date: "2024-01-16",
-      time: "2:00 PM",
-      address: "Biyem-Assi, Yaounde",
-      price: 45000,
-      description: "Install new split AC unit in bedroom",
-      customerImage: "/placeholder.svg?height=40&width=40",
-      urgency: "medium",
-    },
-  ]
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    setLoading(true);
+    fetch(`/api/bookings?technicianId=${session.user.id}`)
+      .then(res => res.json())
+      .then(data => {
+        setBookings(data);
+        setLoading(false);
+      });
+    // Fetch technician profile
+    fetch(`/api/technicians?id=${session.user.id}`)
+      .then(res => res.json())
+      .then(data => {
+        setProfile(Array.isArray(data) ? data[0] : data);
+      });
+  }, [session?.user?.id]);
 
-  const upcomingJobs = [
-    {
-      id: 3,
-      service: "Plumbing Repair",
-      customer: "Sarah Ngum",
-      date: "2024-01-17",
-      time: "9:00 AM",
-      address: "Deido, Douala",
-      price: 12000,
-      status: "confirmed",
-      customerImage: "/placeholder.svg?height=40&width=40",
-    },
-  ]
-
-  const completedJobs = [
-    {
-      id: 4,
-      service: "Carpentry Work",
-      customer: "David Yassa",
-      date: "2024-01-12",
-      price: 25000,
-      rating: 5,
-      review: "Excellent work! Very professional and completed on time.",
-      customerImage: "/placeholder.svg?height=40&width=40",
-    },
-    {
-      id: 5,
-      service: "Electrical Maintenance",
-      customer: "Lisa Enow",
-      date: "2024-01-10",
-      price: 18000,
-      rating: 4,
-      review: "Good service, arrived on time and fixed the issue quickly.",
-      customerImage: "/placeholder.svg?height=40&width=40",
-    },
-  ]
+  // Filter bookings by status
+  const bookingRequests = bookings.filter((b: any) => b.status === "PENDING");
+  const upcomingJobs = bookings.filter((b: any) => b.status === "CONFIRMED");
+  const completedJobs = bookings.filter((b: any) => b.status === "COMPLETED");
 
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
@@ -136,7 +120,7 @@ export default function TechnicianDashboard() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Welcome back, John!</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Welcome back, {session?.user?.name}!</h1>
           <p className="text-gray-600">Manage your bookings and grow your business</p>
         </div>
 
@@ -147,11 +131,11 @@ export default function TechnicianDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">This Month</p>
-                  <p className="text-2xl font-bold text-green-600">{formatCurrency(125000, "CFA")}</p>
+                  <p className="text-2xl font-bold text-green-600">{formatCurrency(completedJobs.reduce((sum, job) => sum + (job.price ?? 0), 0), "CFA")}</p>
                 </div>
                 <DollarSign className="h-8 w-8 text-green-600" />
               </div>
-              <p className="text-xs text-gray-500 mt-2">+12% from last month</p>
+              <p className="text-xs text-gray-500 mt-2">+0% from last month</p>
             </CardContent>
           </Card>
           <Card>
@@ -159,7 +143,7 @@ export default function TechnicianDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Jobs Completed</p>
-                  <p className="text-2xl font-bold text-blue-600">23</p>
+                  <p className="text-2xl font-bold text-blue-600">{completedJobs.length}</p>
                 </div>
                 <CheckCircle className="h-8 w-8 text-blue-600" />
               </div>
@@ -171,11 +155,11 @@ export default function TechnicianDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Average Rating</p>
-                  <p className="text-2xl font-bold text-yellow-600">4.9</p>
+                  <p className="text-2xl font-bold text-yellow-600">{completedJobs.length ? (completedJobs.reduce((sum, job) => sum + (job.rating ?? 0), 0) / completedJobs.length).toFixed(1) : "0.0"}</p>
                 </div>
                 <Star className="h-8 w-8 text-yellow-600" />
               </div>
-              <p className="text-xs text-gray-500 mt-2">Based on 127 reviews</p>
+              <p className="text-xs text-gray-500 mt-2">Based on {completedJobs.length} reviews</p>
             </CardContent>
           </Card>
           <Card>
@@ -183,7 +167,7 @@ export default function TechnicianDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Response Rate</p>
-                  <p className="text-2xl font-bold text-purple-600">98%</p>
+                  <p className="text-2xl font-bold text-purple-600">0%</p>
                 </div>
                 <TrendingUp className="h-8 w-8 text-purple-600" />
               </div>
@@ -217,18 +201,15 @@ export default function TechnicianDashboard() {
                         <Avatar>
                           <AvatarImage src={request.customerImage || "/placeholder.svg"} />
                           <AvatarFallback>
-                            {request.customer
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
+                            {getCustomerName(request.customer).split(" ").map((n: string) => n[0]).join("")}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-1">
                             <h3 className="font-semibold text-lg">{request.service}</h3>
-                            <Badge className={getUrgencyColor(request.urgency)}>{request.urgency} priority</Badge>
+                            <Badge className={getUrgencyColor(request.urgency ?? "")}>{request.urgency} priority</Badge>
                           </div>
-                          <p className="text-gray-600 mb-2">Requested by {request.customer}</p>
+                          <p className="text-gray-600 mb-2">Requested by {getCustomerName(request.customer)}</p>
                           <div className="flex items-center space-x-4 text-sm text-gray-500 mb-2">
                             <div className="flex items-center space-x-1">
                               <Calendar className="h-4 w-4" />
@@ -248,7 +229,7 @@ export default function TechnicianDashboard() {
                       </div>
                       <div className="text-right">
                         <div className="text-2xl font-bold text-green-600 mb-4">
-                          {formatCurrency(request.price, "CFA")}
+                          {formatCurrency(Number(request.price ?? 0), "CFA")}
                         </div>
                         <div className="flex space-x-2">
                           <Button variant="outline" size="sm">
@@ -283,15 +264,12 @@ export default function TechnicianDashboard() {
                         <Avatar>
                           <AvatarImage src={job.customerImage || "/placeholder.svg"} />
                           <AvatarFallback>
-                            {job.customer
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
+                            {getCustomerName(job.customer).split(" ").map((n: string) => n[0]).join("")}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
                           <h3 className="font-semibold text-lg mb-1">{job.service}</h3>
-                          <p className="text-gray-600 mb-2">for {job.customer}</p>
+                          <p className="text-gray-600 mb-2">for {getCustomerName(job.customer)}</p>
                           <div className="flex items-center space-x-4 text-sm text-gray-500 mb-2">
                             <div className="flex items-center space-x-1">
                               <Calendar className="h-4 w-4" />
@@ -310,7 +288,7 @@ export default function TechnicianDashboard() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-2xl font-bold text-blue-600 mb-2">{formatCurrency(job.price, "CFA")}</div>
+                        <div className="text-2xl font-bold text-blue-600 mb-2">{formatCurrency(Number(job.price ?? 0), "CFA")}</div>
                         <div className="flex space-x-2">
                           <Button variant="outline" size="sm">
                             <MessageCircle className="h-4 w-4 mr-1" />
@@ -344,15 +322,12 @@ export default function TechnicianDashboard() {
                         <Avatar>
                           <AvatarImage src={job.customerImage || "/placeholder.svg"} />
                           <AvatarFallback>
-                            {job.customer
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
+                            {getCustomerName(job.customer).split(" ").map((n: string) => n[0]).join("")}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
                           <h3 className="font-semibold text-lg mb-1">{job.service}</h3>
-                          <p className="text-gray-600 mb-2">for {job.customer}</p>
+                          <p className="text-gray-600 mb-2">for {getCustomerName(job.customer)}</p>
                           <div className="flex items-center space-x-4 text-sm text-gray-500 mb-3">
                             <div className="flex items-center space-x-1">
                               <Calendar className="h-4 w-4" />
@@ -360,7 +335,7 @@ export default function TechnicianDashboard() {
                             </div>
                             <div className="flex items-center space-x-1">
                               <Star className="h-4 w-4 text-yellow-400" />
-                              <span>{job.rating}/5</span>
+                              <span>{job.rating ?? 0}/5</span>
                             </div>
                           </div>
                           {job.review && (
@@ -371,12 +346,12 @@ export default function TechnicianDashboard() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-xl font-bold text-gray-900 mb-2">{formatCurrency(job.price, "CFA")}</div>
+                        <div className="text-xl font-bold text-gray-900 mb-2">{formatCurrency(Number(job.price ?? 0), "CFA")}</div>
                         <div className="flex">
                           {[...Array(5)].map((_, i) => (
                             <Star
                               key={i}
-                              className={`h-4 w-4 ${i < job.rating ? "text-yellow-400 fill-current" : "text-gray-300"}`}
+                              className={`h-4 w-4 ${i < (job.rating ?? 0) ? "text-yellow-400 fill-current" : "text-gray-300"}`}
                             />
                           ))}
                         </div>
@@ -397,31 +372,31 @@ export default function TechnicianDashboard() {
               <CardContent className="space-y-6">
                 <div className="flex items-center space-x-4">
                   <Avatar className="h-20 w-20">
-                    <AvatarImage src="/placeholder.svg?height=80&width=80" />
-                    <AvatarFallback>JO</AvatarFallback>
+                    <AvatarImage src={profile?.image || "/placeholder.svg?height=80&width=80"} />
+                    <AvatarFallback>{profile?.name ? profile.name.split(" ").map((n: string) => n[0]).join("") : ""}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <h3 className="text-xl font-semibold">John Okafor</h3>
-                    <p className="text-gray-600">Electrical Engineer</p>
-                    <p className="text-gray-600">5 years experience</p>
-                    <div className="flex items-center space-x-1 mt-1">
-                      <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                      <span className="text-sm">4.9 (127 reviews)</span>
-                    </div>
+                    <h3 className="text-xl font-semibold">{profile?.name || "No Name"}</h3>
+                    <p className="text-gray-600">{profile?.technicianProfile?.bio || "No bio"}</p>
+                    <p className="text-gray-600">{profile?.technicianProfile?.experience || ""}</p>
+                    {/* You can add rating/reviews if available in profile */}
                   </div>
                   <Button variant="outline">
                     <Settings className="h-4 w-4 mr-2" />
                     Edit Profile
                   </Button>
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <h4 className="font-semibold mb-2">Services Offered</h4>
                     <div className="space-y-2">
-                      <Badge variant="secondary">Electrical Repairs</Badge>
-                      <Badge variant="secondary">Wiring Installation</Badge>
-                      <Badge variant="secondary">Circuit Breaker Repair</Badge>
+                      {profile?.technicianProfile?.services?.length ? (
+                        profile.technicianProfile.services.map((service: string) => (
+                          <Badge key={service} variant="secondary">{service}</Badge>
+                        ))
+                      ) : (
+                        <span className="text-gray-500">No services listed</span>
+                      )}
                     </div>
                     <Button variant="link" className="p-0 h-auto mt-2">
                       Manage Services
@@ -429,31 +404,13 @@ export default function TechnicianDashboard() {
                   </div>
                   <div>
                     <h4 className="font-semibold mb-2">Service Area</h4>
-                    <p className="text-gray-600">Lagos Island, Victoria Island, Ikoyi</p>
-                    <p className="text-sm text-gray-500">Within 15km radius</p>
+                    <p className="text-gray-600">{profile?.technicianProfile?.location || "No location"}</p>
                     <Button variant="link" className="p-0 h-auto">
                       Update Service Area
                     </Button>
                   </div>
                 </div>
-
-                <div>
-                  <h4 className="font-semibold mb-2">Certifications</h4>
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                      <span className="text-sm">Electrical Engineering License</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <CheckCircle className="h-4 w-4 text-green-500" />
-                      <span className="text-sm">Safety Certification</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <AlertCircle className="h-4 w-4 text-yellow-500" />
-                      <span className="text-sm">Insurance Verification (Pending)</span>
-                    </div>
-                  </div>
-                </div>
+                {/* Add certifications if available in profile.technicianProfile */}
               </CardContent>
             </Card>
           </TabsContent>

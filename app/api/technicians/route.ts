@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { PrismaClient } from "@prisma/client"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "../auth/[...nextauth]/route"
+import bcrypt from "bcrypt"
 
 const prisma = new PrismaClient()
 
@@ -28,40 +29,49 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // @ts-expect-error: getServerSession signature mismatch in App Router
-    const session = await getServerSession(request, authOptions)
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      )
-    }
-
     const body = await request.json()
-    const { services, bio, location, phone } = body
+    const { firstName, lastName, email, phone, specialty, experience, location, bio, password, services } = body
 
-    if (!Array.isArray(services) || services.length === 0) {
-      return NextResponse.json(
-        { error: "Services must be a non-empty array" },
-        { status: 400 }
-      )
+    if (!email || !password || !firstName || !lastName) {
+      return NextResponse.json({ error: "Missing required fields." }, { status: 400 })
     }
 
-    const technician = await prisma.technicianProfile.create({
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({ where: { email } })
+    if (existingUser) {
+      return NextResponse.json({ error: "Email already in use." }, { status: 400 })
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10)
+
+    // Create user
+    const user = await prisma.user.create({
       data: {
-        userId: session.user.id,
-        services,
-        bio,
-        location,
-        phone,
+        name: `${firstName} ${lastName}`,
+        email,
+        password: hashedPassword,
+        role: "TECHNICIAN",
       },
     })
 
-    return NextResponse.json(technician)
+    // Create technician profile
+    const technicianProfile = await prisma.technicianProfile.create({
+      data: {
+        userId: user.id,
+        bio,
+        phone,
+        location,
+        services: services || (specialty ? [specialty] : []),
+        // Optionally add experience, etc.
+      },
+    })
+
+    return NextResponse.json({ user, technicianProfile })
   } catch (error) {
-    console.error("Error creating technician profile:", error)
+    console.error("Error creating technician:", error)
     return NextResponse.json(
-      { error: "Failed to create technician profile" },
+      { error: "Failed to create technician account" },
       { status: 500 }
     )
   }

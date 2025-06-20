@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -14,14 +14,23 @@ import { MapPin, Star, Clock, Shield, CreditCard, ArrowLeft, ArrowRight, Filter 
 import { format } from "date-fns"
 import Link from "next/link"
 import { formatCurrency } from "@/lib/currency"
+import { useSession } from "next-auth/react"
 
 export default function BookServicePage() {
+  const { data: session, status } = useSession();
   const [step, setStep] = useState(1)
   const [selectedService, setSelectedService] = useState("")
-  const [selectedTechnician, setSelectedTechnician] = useState(null)
+  const [selectedTechnician, setSelectedTechnician] = useState<any>(null)
   const [selectedDate, setSelectedDate] = useState<Date>()
   const [selectedTime, setSelectedTime] = useState("")
   const [searchLocation, setSearchLocation] = useState("")
+  const [technicians, setTechnicians] = useState<any[]>([])
+  const [search, setSearch] = useState("")
+
+  if (status === "loading") return <div>Loading...</div>;
+  if (status === "unauthenticated") {
+    return <div className="min-h-screen flex items-center justify-center text-xl font-semibold text-red-600">You must be logged in to book a service.</div>;
+  }
 
   const serviceCategories = [
     { id: "electrical", name: "Electrical", description: "Wiring, repairs, installations" },
@@ -31,53 +40,20 @@ export default function BookServicePage() {
     { id: "general", name: "General Repairs", description: "Home and office maintenance" },
   ]
 
-  const availableTechnicians = [
-    {
-      id: 1,
-      name: "John Okafor",
-      specialty: "Electrical Engineer",
-      rating: 4.9,
-      reviews: 127,
-      location: "Lagos Island",
-      distance: "2.3 km",
-      hourlyRate: 2500,
-      image: "/placeholder.svg?height=60&width=60",
-      verified: true,
-      responseTime: "Usually responds in 15 mins",
-      completedJobs: 156,
-      availability: "Available today",
-    },
-    {
-      id: 2,
-      name: "Sarah Mensah",
-      specialty: "Plumbing Specialist",
-      rating: 4.8,
-      reviews: 89,
-      location: "Victoria Island",
-      distance: "3.1 km",
-      hourlyRate: 2000,
-      image: "/placeholder.svg?height=60&width=60",
-      verified: true,
-      responseTime: "Usually responds in 30 mins",
-      completedJobs: 98,
-      availability: "Available tomorrow",
-    },
-    {
-      id: 3,
-      name: "David Mwangi",
-      specialty: "AC Technician",
-      rating: 4.7,
-      reviews: 156,
-      location: "Ikoyi",
-      distance: "4.2 km",
-      hourlyRate: 1800,
-      image: "/placeholder.svg?height=60&width=60",
-      verified: true,
-      responseTime: "Usually responds in 1 hour",
-      completedJobs: 203,
-      availability: "Available today",
-    },
-  ]
+  useEffect(() => {
+    fetch("/api/technicians")
+      .then(res => res.json())
+      .then(data => setTechnicians(data));
+  }, []);
+
+  const filteredTechnicians = technicians.filter(
+    (tech) =>
+      (!selectedService || tech.technicianProfile?.services?.includes(selectedService)) &&
+      (search === "" ||
+        tech.name?.toLowerCase().includes(search.toLowerCase()) ||
+        tech.technicianProfile?.services?.some((s: string) => s.toLowerCase().includes(search.toLowerCase()))
+      )
+  );
 
   const timeSlots = [
     "9:00 AM",
@@ -98,6 +74,40 @@ export default function BookServicePage() {
   const handleBack = () => {
     if (step > 1) setStep(step - 1)
   }
+
+  const handleConfirmBooking = async () => {
+    if (!selectedTechnician || !selectedService || !selectedDate || !selectedTime) {
+      alert("Please complete all booking details.");
+      return;
+    }
+    // Combine date and time into a single ISO string
+    const [hourStr, minuteStr] = selectedTime.replace(/\s*AM|\s*PM/, "").split(":");
+    let hour = parseInt(hourStr, 10);
+    if (selectedTime.includes("PM") && hour !== 12) hour += 12;
+    if (selectedTime.includes("AM") && hour === 12) hour = 0;
+    const dateObj = new Date(selectedDate);
+    dateObj.setHours(hour, parseInt(minuteStr || "0", 10), 0, 0);
+
+    const res = await fetch("/api/bookings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({
+        technicianId: selectedTechnician.id,
+        service: selectedService,
+        date: dateObj.toISOString(),
+        notes: "", // Optionally add notes/description
+        location: searchLocation,
+      }),
+    });
+    if (res.ok) {
+      alert("Booking created!");
+      // Optionally redirect or reset state
+    } else {
+      const data = await res.json();
+      alert(data.error || "Failed to create booking.");
+    }
+  };
 
   const renderStepContent = () => {
     switch (step) {
@@ -154,7 +164,7 @@ export default function BookServicePage() {
 
             <div className="flex items-center space-x-4 mb-6">
               <div className="flex-1">
-                <Input placeholder="Search by name or specialty" />
+                <Input placeholder="Search by name or specialty" value={search} onChange={e => setSearch(e.target.value)} />
               </div>
               <Button variant="outline">
                 <Filter className="h-4 w-4 mr-2" />
@@ -163,7 +173,7 @@ export default function BookServicePage() {
             </div>
 
             <div className="space-y-4">
-              {availableTechnicians.map((technician) => (
+              {filteredTechnicians.map((technician) => (
                 <Card
                   key={technician.id}
                   className={`cursor-pointer transition-all hover:shadow-md ${
@@ -171,48 +181,32 @@ export default function BookServicePage() {
                   }`}
                   onClick={() => setSelectedTechnician(technician)}
                 >
-                  <CardContent className="p-6">
+                  <CardContent className="p-4">
                     <div className="flex items-start space-x-4">
                       <Avatar className="h-16 w-16">
                         <AvatarImage src={technician.image || "/placeholder.svg"} />
                         <AvatarFallback>
                           {technician.name
-                            .split(" ")
-                            .map((n) => n[0])
+                            ?.split(" ")
+                            .map((n: string) => n[0])
                             .join("")}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-1">
                           <h3 className="font-semibold text-lg">{technician.name}</h3>
-                          {technician.verified && <Shield className="h-4 w-4 text-green-500" />}
-                          <Badge className="bg-green-100 text-green-800">{technician.availability}</Badge>
+                          {/* You can add verified badge if available */}
+                          <Badge className="bg-green-100 text-green-800">Available</Badge>
                         </div>
-                        <p className="text-gray-600 mb-2">{technician.specialty}</p>
+                        <p className="text-gray-600 mb-2">{technician.technicianProfile?.services?.join(", ")}</p>
                         <div className="flex items-center space-x-4 text-sm text-gray-500 mb-2">
-                          <div className="flex items-center space-x-1">
-                            <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                            <span>{technician.rating}</span>
-                            <span>({technician.reviews} reviews)</span>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <MapPin className="h-4 w-4" />
-                            <span>
-                              {technician.location} • {technician.distance}
-                            </span>
-                          </div>
+                          {/* Add rating, reviews, location, etc. if available */}
                         </div>
-                        <div className="flex items-center justify-between">
-                          <div className="text-sm text-gray-500">
-                            <p>{technician.completedJobs} jobs completed</p>
-                            <p>{technician.responseTime}</p>
-                          </div>
-                          <div className="text-right">
-                            <span className="text-2xl font-bold text-blue-600">
-                              {formatCurrency(technician.hourlyRate, "CFA")}
-                            </span>
-                            <span className="text-gray-500">/hour</span>
-                          </div>
+                        <div className="text-sm text-gray-500">
+                          {/* Add completed jobs, response time, etc. if available */}
+                        </div>
+                        <div className="text-right">
+                          {/* If you have hourlyRate, show it here */}
                         </div>
                       </div>
                     </div>
@@ -274,13 +268,13 @@ export default function BookServicePage() {
                       <AvatarFallback>
                         {selectedTechnician.name
                           .split(" ")
-                          .map((n) => n[0])
+                          .map((n: string) => n[0])
                           .join("")}
                       </AvatarFallback>
                     </Avatar>
                     <div>
                       <p className="font-semibold">{selectedTechnician.name}</p>
-                      <p className="text-sm text-gray-600">{selectedTechnician.specialty}</p>
+                      <p className="text-sm text-gray-600">{selectedTechnician.technicianProfile?.services?.join(", ")}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -444,7 +438,7 @@ export default function BookServicePage() {
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           ) : (
-            <Button className="bg-green-600 hover:bg-green-700">
+            <Button className="bg-green-600 hover:bg-green-700" onClick={handleConfirmBooking}>
               <CreditCard className="h-4 w-4 mr-2" />
               Confirm Booking
             </Button>

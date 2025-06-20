@@ -24,20 +24,38 @@ import {
 import Link from "next/link"
 import { BookNowButton } from "@/components/book-now-button"
 import { formatCurrency } from "@/lib/currency"
+import { useSession } from "next-auth/react"
 
 export default function CustomerDashboard() {
+  const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState("bookings")
   const [bookings, setBookings] = useState<any[]>([])
+  const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
     fetch("/api/bookings")
       .then((res) => res.json())
-      .then((data) => setBookings(data))
-  }, [])
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setBookings(data)
+        } else {
+          setBookings([])
+        }
+      })
+    // Fetch customer profile
+    if (session?.user?.id) {
+      fetch(`/api/customers?id=${session.user.id}`)
+        .then(res => res.json())
+        .then(data => setProfile(Array.isArray(data) ? data[0] : data));
+    }
+  }, [session?.user?.id])
 
   // Split bookings into upcoming and history based on status
-  const upcomingBookings = bookings.filter((b) => b.status === "CONFIRMED" || b.status === "PENDING")
-  const bookingHistory = bookings.filter((b) => b.status === "COMPLETED" || b.status === "CANCELLED")
+  const upcomingBookings = bookings.filter((b: any) => b.status === "CONFIRMED" || b.status === "PENDING")
+  const bookingHistory = bookings.filter((b: any) => b.status === "COMPLETED" || b.status === "CANCELLED")
+  const upcomingCount = upcomingBookings.length;
+  const completedCount = bookingHistory.length;
+  const avgRating = bookings.length ? (bookings.reduce((sum: any, b: any) => sum + (b.rating ?? 0), 0) / bookings.length).toFixed(1) : "0.0";
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -78,7 +96,7 @@ export default function CustomerDashboard() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Welcome back, John!</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Welcome back, {profile?.name || session?.user?.name || "!"}</h1>
           <p className="text-gray-600">Manage your bookings and find new services</p>
         </div>
 
@@ -96,21 +114,21 @@ export default function CustomerDashboard() {
           <Card>
             <CardContent className="p-6 text-center">
               <Calendar className="h-8 w-8 text-green-600 mx-auto mb-2" />
-              <h3 className="font-semibold">2</h3>
+              <h3 className="font-semibold">{upcomingCount}</h3>
               <p className="text-sm text-gray-600">Upcoming bookings</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-6 text-center">
               <History className="h-8 w-8 text-purple-600 mx-auto mb-2" />
-              <h3 className="font-semibold">12</h3>
+              <h3 className="font-semibold">{completedCount}</h3>
               <p className="text-sm text-gray-600">Completed jobs</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="p-6 text-center">
               <Star className="h-8 w-8 text-yellow-600 mx-auto mb-2" />
-              <h3 className="font-semibold">4.8</h3>
+              <h3 className="font-semibold">{avgRating}</h3>
               <p className="text-sm text-gray-600">Average rating given</p>
             </CardContent>
           </Card>
@@ -268,24 +286,23 @@ export default function CustomerDashboard() {
               <CardContent className="space-y-6">
                 <div className="flex items-center space-x-4">
                   <Avatar className="h-20 w-20">
-                    <AvatarImage src="/placeholder.svg?height=80&width=80" />
-                    <AvatarFallback>JD</AvatarFallback>
+                    <AvatarImage src={profile?.image || "/placeholder.svg?height=80&width=80"} />
+                    <AvatarFallback>{(profile?.name || session?.user?.name || "").split(" ").map((n: string) => n[0]).join("")}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <h3 className="text-xl font-semibold">John Doe</h3>
-                    <p className="text-gray-600">john.doe@email.com</p>
-                    <p className="text-gray-600">+234 801 234 5678</p>
+                    <h3 className="text-xl font-semibold">{profile?.name || session?.user?.name || "No Name"}</h3>
+                    <p className="text-gray-600">{profile?.email || session?.user?.email || "No email"}</p>
+                    <p className="text-gray-600">{profile?.customerProfile?.phone || "No phone"}</p>
                   </div>
                   <Button variant="outline">
                     <User className="h-4 w-4 mr-2" />
                     Edit Profile
                   </Button>
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <h4 className="font-semibold mb-2">Default Address</h4>
-                    <p className="text-gray-600">123 Victoria Island, Lagos, Nigeria</p>
+                    <p className="text-gray-600">{profile?.customerProfile?.address || "No address"}</p>
                     <Button variant="link" className="p-0 h-auto">
                       Edit Address
                     </Button>
