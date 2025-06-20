@@ -6,6 +6,7 @@ import Link from "next/link"
 import { BookNowButton } from "@/components/book-now-button"
 import { QuickBookWidget } from "@/components/quick-book-widget"
 import { formatCurrency } from "@/lib/currency"
+import { useEffect, useState } from "react"
 
 export default function HomePage() {
   const serviceCategories = [
@@ -16,41 +17,16 @@ export default function HomePage() {
     { icon: Wrench, name: "General Repairs", count: 52, color: "bg-gray-100 text-gray-800" },
   ]
 
-  const featuredTechnicians = [
-    {
-      id: 1,
-      name: "John Okafor",
-      specialty: "Electrical Engineer",
-      rating: 4.9,
-      reviews: 127,
-      location: "Lagos, Nigeria",
-      hourlyRate: 2500,
-      image: "/placeholder.svg?height=80&width=80",
-      verified: true,
-    },
-    {
-      id: 2,
-      name: "Sarah Mensah",
-      specialty: "Plumbing Specialist",
-      rating: 4.8,
-      reviews: 89,
-      location: "Accra, Ghana",
-      hourlyRate: 2000,
-      image: "/placeholder.svg?height=80&width=80",
-      verified: true,
-    },
-    {
-      id: 3,
-      name: "David Mwangi",
-      specialty: "AC Technician",
-      rating: 4.7,
-      reviews: 156,
-      location: "Nairobi, Kenya",
-      hourlyRate: 1800,
-      image: "/placeholder.svg?height=80&width=80",
-      verified: true,
-    },
-  ]
+  const [featuredTechnicians, setFeaturedTechnicians] = useState<any[]>([])
+
+  useEffect(() => {
+    fetch("/api/technicians")
+      .then((res) => res.json())
+      .then((data) => {
+        // Optionally filter or sort for "featured"
+        setFeaturedTechnicians(data)
+      })
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
