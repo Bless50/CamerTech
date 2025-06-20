@@ -159,33 +159,38 @@ export default function SearchPage() {
 
     // Filter results based on selected category or search query
     if (selectedCategory || searchQuery) {
-      const filteredTechnicians = baseResults.technicians.filter((tech) => {
-        const matchesCategory = selectedCategory ? tech.categories.includes(selectedCategory) : true
+      // Ensure we have arrays to filter
+      const technicians = Array.isArray(baseResults.technicians) ? baseResults.technicians : []
+      const services = Array.isArray(baseResults.services) ? baseResults.services : []
+      const articles = Array.isArray(baseResults.articles) ? baseResults.articles : []
+
+      const filteredTechnicians = technicians.filter((tech) => {
+        const matchesCategory = selectedCategory ? tech.categories?.includes(selectedCategory) : true
         const matchesQuery = searchQuery
-          ? tech.specialty.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            tech.services.some((service) => service.toLowerCase().includes(searchQuery.toLowerCase())) ||
-            tech.name.toLowerCase().includes(searchQuery.toLowerCase())
+          ? tech.specialty?.toLowerCase()?.includes(searchQuery.toLowerCase()) ||
+            (Array.isArray(tech.services) && tech.services.some((service) => service?.toLowerCase()?.includes(searchQuery.toLowerCase()))) ||
+            tech.name?.toLowerCase()?.includes(searchQuery.toLowerCase())
           : true
         const matchesService = selectedService
-          ? tech.services.some((service) => service.toLowerCase().includes(selectedService.toLowerCase()))
+          ? Array.isArray(tech.services) && tech.services.some((service) => service?.toLowerCase()?.includes(selectedService.toLowerCase()))
           : true
         return matchesCategory && matchesQuery && matchesService
       })
 
-      const filteredServices = baseResults.services.filter((service) => {
+      const filteredServices = services.filter((service) => {
         const matchesCategory = selectedCategory ? service.category === selectedCategory : true
         const matchesQuery = searchQuery
-          ? service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            service.description.toLowerCase().includes(searchQuery.toLowerCase())
+          ? service.name?.toLowerCase()?.includes(searchQuery.toLowerCase()) ||
+            service.description?.toLowerCase()?.includes(searchQuery.toLowerCase())
           : true
         return matchesCategory && matchesQuery
       })
 
-      const filteredArticles = baseResults.articles.filter((article) => {
+      const filteredArticles = articles.filter((article) => {
         const matchesCategory = selectedCategory ? article.serviceCategory === selectedCategory : true
         const matchesQuery = searchQuery
-          ? article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            article.excerpt.toLowerCase().includes(searchQuery.toLowerCase())
+          ? article.title?.toLowerCase()?.includes(searchQuery.toLowerCase()) ||
+            article.excerpt?.toLowerCase()?.includes(searchQuery.toLowerCase())
           : true
         return matchesCategory && matchesQuery
       })
